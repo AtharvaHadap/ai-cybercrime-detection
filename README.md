@@ -26,7 +26,7 @@ A powerful web-based cybersecurity tool that uses **Google Gemini 2.5 Pro AI** t
 
 > Run locally and open `http://localhost:3000` in your browser
 
-![App Screenshot] ![Screenshot.png]
+![App Screenshot](screenshot.png)
 
 ---
 
