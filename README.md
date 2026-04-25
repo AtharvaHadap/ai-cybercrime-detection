@@ -26,7 +26,7 @@ A powerful web-based cybersecurity tool that uses **Google Gemini 2.5 Pro AI** t
 
 > Run locally and open `http://localhost:3000` in your browser
 
-![App Screenshot]([[https://raw.githubusercontent.com/AtharvaHadap/ai-cybercrime-detection/main/screenshot.png](https://github.com/AtharvaHadap/ai-cybercrime-detection/blob/main/Screenshot.png](https://github.com/AtharvaHadap/ai-cybercrime-detection/blob/main/Screenshot.png))
+![App Screenshot](https://github.com/AtharvaHadap/ai-cybercrime-detection/blob/main/Screenshot.png)
 
 ---
 
