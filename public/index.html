@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Cybercrime Detection System</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', sans-serif;
+    background: #0a0a1a;
+    color: #e0e0e0;
+    min-height: 100vh;
+  }
+  header {
+    background: linear-gradient(135deg, #1a1a3e, #0d0d2b);
+    border-bottom: 1px solid #333;
+    padding: 20px 40px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  header h1 { font-size: 24px; color: #fff; }
+  header p { font-size: 13px; color: #888; margin-top: 4px; }
+  .badge {
+    background: #ff4444;
+    color: white;
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-weight: 600;
+  }
+  .tabs {
+    display: flex;
+    gap: 0;
+    background: #111128;
+    border-bottom: 1px solid #222;
+    padding: 0 40px;
+  }
+  .tab {
+    padding: 14px 24px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #888;
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s;
+  }
+  .tab.active { color: #7b8cff; border-bottom-color: #7b8cff; }
+  .tab:hover { color: #ccc; }
+  .container { max-width: 900px; margin: 40px auto; padding: 0 20px; }
+  .panel { display: none; }
+  .panel.active { display: block; }
+  .card {
+    background: #12122a;
+    border: 1px solid #2a2a4a;
+    border-radius: 16px;
+    padding: 32px;
+    margin-bottom: 24px;
+  }
+  .card h2 { font-size: 18px; color: #fff; margin-bottom: 8px; }
+  .card p { font-size: 13px; color: #888; margin-bottom: 24px; }
+  .upload-area {
+    border: 2px dashed #3a3a6a;
+    border-radius: 12px;
+    padding: 48px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: #0d0d20;
+  }
+  .upload-area:hover { border-color: #7b8cff; background: #12122a; }
+  .upload-area.dragover { border-color: #7b8cff; background: #1a1a3a; }
+  .upload-icon { font-size: 48px; margin-bottom: 16px; }
+  .upload-area h3 { color: #ccc; margin-bottom: 8px; }
+  .upload-area p { color: #666; font-size: 13px; margin: 0; }
+  .btn {
+    background: linear-gradient(135deg, #7b8cff, #5c6ef0);
+    color: white;
+    border: none;
+    padding: 12px 32px;
+    border-radius: 8px;
+    font-size: 15px;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 16px;
+    transition: opacity 0.2s;
+  }
+  .btn:hover { opacity: 0.9; }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn-danger {
+    background: linear-gradient(135deg, #ff4444, #cc2222);
+  }
+  .btn-warning {
+    background: linear-gradient(135deg, #ffaa00, #cc8800);
+  }
+  textarea {
+    width: 100%;
+    background: #0d0d20;
+    border: 1px solid #2a2a4a;
+    border-radius: 8px;
+    padding: 16px;
+    color: #e0e0e0;
+    font-size: 14px;
+    resize: vertical;
+    min-height: 150px;
+    font-family: inherit;
+  }
+  textarea:focus { outline: none; border-color: #7b8cff; }
+  .result-box {
+    background: #0a0a1a;
+    border: 1px solid #2a2a4a;
+    border-radius: 12px;
+    padding: 24px;
+    margin-top: 24px;
+    display: none;
+  }
+  .result-box.show { display: block; }
+  .verdict {
+    display: inline-block;
+    padding: 6px 20px;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 14px;
+    margin-bottom: 16px;
+  }
+  .verdict.danger { background: #ff000022; color: #ff4444; border: 1px solid #ff4444; }
+  .verdict.warning { background: #ffaa0022; color: #ffaa00; border: 1px solid #ffaa00; }
+  .verdict.safe { background: #00ff0022; color: #00cc44; border: 1px solid #00cc44; }
+  .analysis-text {
+    font-size: 14px;
+    line-height: 1.8;
+    color: #ccc;
+    white-space: pre-wrap;
+  }
+  .loading {
+    text-align: center;
+    padding: 32px;
+    display: none;
+  }
+  .loading.show { display: block; }
+  .spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid #333;
+    border-top-color: #7b8cff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 16px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .preview-img {
+    max-width: 100%;
+    max-height: 300px;
+    border-radius: 8px;
+    margin-top: 16px;
+    display: none;
+  }
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+  .stat-card {
+    background: #12122a;
+    border: 1px solid #2a2a4a;
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+  }
+  .stat-card .number { font-size: 32px; font-weight: 700; color: #7b8cff; }
+  .stat-card .label { font-size: 12px; color: #888; margin-top: 4px; }
+  #file-input { display: none; }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>🛡️ AI Cybercrime Detection System</h1>
+    <p>Powered by Google Gemini AI — Detecting Deepfakes, Phishing & Social Engineering</p>
+  </div>
+  <span class="badge">LIVE</span>
+</header>
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('deepfake')">🎭 Deepfake Detector</div>
+  <div class="tab" onclick="switchTab('phishing')">🎣 Phishing Scanner</div>
+  <div class="tab" onclick="switchTab('social')">🧠 Social Engineering</div>
+</div>
+
+<div class="container">
+
+  <!-- Stats -->
+  <div class="stats">
+    <div class="stat-card">
+      <div class="number" id="total-scans">0</div>
+      <div class="label">Total Scans</div>
+    </div>
+    <div class="stat-card">
+      <div class="number" id="threats-found">0</div>
+      <div class="label">Threats Found</div>
+    </div>
+    <div class="stat-card">
+      <div class="number" id="safe-count">0</div>
+      <div class="label">Safe Content</div>
+    </div>
+  </div>
+
+  <!-- Deepfake Panel -->
+  <div class="panel active" id="panel-deepfake">
+    <div class="card">
+      <h2>🎭 Deepfake Image Detection</h2>
+      <p>Upload any image to analyze if it's real, a deepfake, or AI-generated</p>
+      <div class="upload-area" id="upload-area" onclick="document.getElementById('file-input').click()"
+           ondragover="handleDragOver(event)" ondrop="handleDrop(event)" ondragleave="handleDragLeave(event)">
+        <div class="upload-icon">📁</div>
+        <h3>Click to upload or drag & drop</h3>
+        <p>Supports JPG, PNG, WEBP — Max 10MB</p>
+      </div>
+      <input type="file" id="file-input" accept="image/*" onchange="handleFileSelect(event)">
+      <img id="preview-img" class="preview-img">
+      <button class="btn" id="analyze-btn" onclick="analyzeImage()" disabled>
+        🔍 Analyze Image
+      </button>
+    </div>
+    <div class="loading" id="deepfake-loading">
+      <div class="spinner"></div>
+      <p style="color:#888">Analyzing image with AI... Please wait</p>
+    </div>
+    <div class="result-box" id="deepfake-result">
+      <div id="deepfake-verdict" class="verdict"></div>
+      <div id="deepfake-text" class="analysis-text"></div>
+    </div>
+  </div>
+
+  <!-- Phishing Panel -->
+  <div class="panel" id="panel-phishing">
+    <div class="card">
+      <h2>🎣 Phishing Email Scanner</h2>
+      <p>Paste any suspicious email or message to check if it's a phishing attempt</p>
+      <textarea id="phishing-input" placeholder="Paste the suspicious email or message here...&#10;&#10;Example: 'Dear user, your account has been compromised. Click here immediately to verify...'"></textarea>
+      <button class="btn btn-danger" onclick="analyzeText('phishing')">
+        🔍 Scan for Phishing
+      </button>
+    </div>
+    <div class="loading" id="phishing-loading">
+      <div class="spinner"></div>
+      <p style="color:#888">Scanning for phishing indicators...</p>
+    </div>
+    <div class="result-box" id="phishing-result">
+      <div id="phishing-verdict" class="verdict"></div>
+      <div id="phishing-text" class="analysis-text"></div>
+    </div>
+  </div>
+
+  <!-- Social Engineering Panel -->
+  <div class="panel" id="panel-social">
+    <div class="card">
+      <h2>🧠 Social Engineering Detector</h2>
+      <p>Analyze messages for psychological manipulation and social engineering tactics</p>
+      <textarea id="social-input" placeholder="Paste any suspicious message, call script, or conversation here...&#10;&#10;Example: 'Hi, I'm calling from Microsoft. Your computer has a virus and we need remote access immediately...'"></textarea>
+      <button class="btn btn-warning" onclick="analyzeText('social')">
+        🔍 Detect Manipulation
+      </button>
+    </div>
+    <div class="loading" id="social-loading">
+      <div class="spinner"></div>
+      <p style="color:#888">Analyzing for manipulation tactics...</p>
+    </div>
+    <div class="result-box" id="social-result">
+      <div id="social-verdict" class="verdict"></div>
+      <div id="social-text" class="analysis-text"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  let selectedFile = null;
+  let totalScans = 0;
+  let threatsFound = 0;
+  let safeCount = 0;
+
+  function switchTab(tab) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    event.target.classList.add('active');
+    document.getElementById('panel-' + tab).classList.add('active');
+  }
+
+  function handleDragOver(e) {
+    e.preventDefault();
+    document.getElementById('upload-area').classList.add('dragover');
+  }
+
+  function handleDragLeave(e) {
+    document.getElementById('upload-area').classList.remove('dragover');
+  }
+
+  function handleDrop(e) {
+    e.preventDefault();
+    document.getElementById('upload-area').classList.remove('dragover');
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith('image/')) loadFile(file);
+  }
+
+  function handleFileSelect(e) {
+    const file = e.target.files[0];
+    if (file) loadFile(file);
+  }
+
+  function loadFile(file) {
+    selectedFile = file;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = document.getElementById('preview-img');
+      img.src = e.target.result;
+      img.style.display = 'block';
+    };
+    reader.readAsDataURL(file);
+    document.getElementById('analyze-btn').disabled = false;
+    document.getElementById('upload-area').querySelector('h3').textContent = '✅ ' + file.name;
+  }
+
+  async function analyzeImage() {
+    if (!selectedFile) return;
+    document.getElementById('deepfake-loading').classList.add('show');
+    document.getElementById('deepfake-result').classList.remove('show');
+    document.getElementById('analyze-btn').disabled = true;
+
+    const formData = new FormData();
+    formData.append('image', selectedFile);
+
+    try {
+      const response = await fetch('/analyze', { method: 'POST', body: formData });
+      const data = await response.json();
+      updateStats(data.analysis);
+      showResult('deepfake', data.analysis || data.error);
+    } catch (err) {
+      showResult('deepfake', 'Error: Could not connect to server.');
+    }
+
+    document.getElementById('deepfake-loading').classList.remove('show');
+    document.getElementById('analyze-btn').disabled = false;
+  }
+
+  async function analyzeText(type) {
+    const input = document.getElementById(type + '-input').value.trim();
+    if (!input) { alert('Please paste some text first!'); return; }
+
+    document.getElementById(type + '-loading').classList.add('show');
+    document.getElementById(type + '-result').classList.remove('show');
+
+    try {
+      const response = await fetch('/analyze-text', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: input, type: type })
+      });
+      const data = await response.json();
+      updateStats(data.analysis);
+      showResult(type, data.analysis || data.error);
+    } catch (err) {
+      showResult(type, 'Error: Could not connect to server.');
+    }
+
+    document.getElementById(type + '-loading').classList.remove('show');
+  }
+
+  function updateStats(analysis) {
+    totalScans++;
+    if (analysis && (analysis.includes('DEEPFAKE') || analysis.includes('PHISHING') ||
+        analysis.includes('SOCIAL ENGINEERING') || analysis.includes('SUSPICIOUS'))) {
+      threatsFound++;
+    } else {
+      safeCount++;
+    }
+    document.getElementById('total-scans').textContent = totalScans;
+    document.getElementById('threats-found').textContent = threatsFound;
+    document.getElementById('safe-count').textContent = safeCount;
+  }
+
+  function showResult(type, text) {
+    const resultBox = document.getElementById(type + '-result');
+    const verdictEl = document.getElementById(type + '-verdict');
+    const textEl = document.getElementById(type + '-text');
+
+    let verdictText = 'ANALYZING...';
+    let verdictClass = 'warning';
+
+    if (text.includes('DEEPFAKE') || text.includes('PHISHING') || text.includes('SOCIAL ENGINEERING ATTEMPT')) {
+      verdictText = '⚠️ THREAT DETECTED';
+      verdictClass = 'danger';
+    } else if (text.includes('SUSPICIOUS')) {
+      verdictText = '⚠️ SUSPICIOUS';
+      verdictClass = 'warning';
+    } else if (text.includes('REAL') || text.includes('LEGITIMATE')) {
+      verdictText = '✅ LOOKS SAFE';
+      verdictClass = 'safe';
+    }
+
+    verdictEl.textContent = verdictText;
+    verdictEl.className = 'verdict ' + verdictClass;
+    textEl.textContent = text;
+    resultBox.classList.add('show');
+  }
+</script>
+</body>
+</html>
